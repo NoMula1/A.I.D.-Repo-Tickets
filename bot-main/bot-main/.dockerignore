@@ -1,0 +1,11 @@
+# ignore everything
+*
+# except these directories
+!db
+!scripts
+!src
+!user
+# and these files
+!.npmrc
+!package.json
+!pnpm-lock.yaml
