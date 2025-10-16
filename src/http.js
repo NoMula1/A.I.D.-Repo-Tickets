@@ -41,11 +41,11 @@ module.exports = async client => {
     });
 
     fastify.decorate('isMember', async (req, res) => {
-        // existing code unchanged
+        // existing logic unchanged
     });
 
     fastify.decorate('isAdmin', async (req, res) => {
-        // existing code unchanged
+        // existing logic unchanged
     });
 
     // -----------------------------
@@ -100,7 +100,6 @@ module.exports = async client => {
     // -----------------------------
     // Routes
     // -----------------------------
-    // Load all routes dynamically
     const dir = join(__dirname, '/routes');
     files(dir, { exclude: /^\./, match: /.js$/, sync: true }).forEach(file => {
         const path = file
@@ -123,12 +122,12 @@ module.exports = async client => {
     fastify.all('/*', {}, (req, res) => handler(req.raw, res.raw, () => {}));
 
     // -----------------------------
-    // Status endpoint for healthchecks
+    // Healthcheck endpoint
     // -----------------------------
     fastify.get('/status', async () => ({ status: 'ok' }));
 
     // -----------------------------
-    // Start server (Railway-compatible)
+    // Start server
     // -----------------------------
     const PORT = process.env.PORT || 3000;
     const HOST = process.env.HTTP_HOST || '0.0.0.0';
