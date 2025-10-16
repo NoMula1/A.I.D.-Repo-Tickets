@@ -40,6 +40,14 @@ module.exports = async client => {
         }
     });
 
+    fastify.decorate('isMember', async (req, res) => {
+        // Existing code unchanged
+    });
+
+    fastify.decorate('isAdmin', async (req, res) => {
+        // Existing code unchanged
+    });
+
     // -----------------------------
     // Body processing
     // -----------------------------
@@ -102,12 +110,19 @@ module.exports = async client => {
             .replace('/index', '') || '/';
         const route = require(file);
 
-        Object.keys(route).forEach(method => fastify.route({
-            config: { client },
-            method: method.toUpperCase(),
-            path,
-            ...route[method](fastify),
-        }));
+        Object.keys(route).forEach(method => {
+            const routeDef = route[method];
+            if (typeof routeDef !== 'function') {
+                client.log.warn.http(`Skipping invalid route definition for ${method} at path ${path}`);
+                return;
+            }
+            fastify.route({
+                config: { client },
+                method: method.toUpperCase(),
+                path,
+                ...routeDef(fastify),
+            });
+        });
     });
 
     const { handler } = await import('@discord-tickets/settings/build/handler.js');
@@ -121,11 +136,15 @@ module.exports = async client => {
     // -----------------------------
     // Start server (Railway-compatible)
     // -----------------------------
-    const PORT = process.env.PORT || 3000;  // Railway injects this automatically
+    const PORT = process.env.PORT || process.env.HTTP_PORT || 3000;
     const HOST = process.env.HTTP_HOST || '0.0.0.0';
 
     fastify.listen({ host: HOST, port: PORT }, (err, addr) => {
         if (err) client.log.error.http(err);
         else client.log.success.http(`Listening at ${addr}`);
+    });
+
+    process.on('sveltekit:error', ({ error, errorId }) => {
+        client.log.error.http(`SvelteKit ${errorId} ${error}`);
     });
 };
