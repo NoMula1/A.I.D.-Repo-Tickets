@@ -24,6 +24,11 @@ module.exports = async client => {
     }
 
     // -----------------------------
+    // Status endpoint for healthchecks
+    // -----------------------------
+    fastify.get('/status', async () => ({ status: 'ok' }));
+
+    // -----------------------------
     // Auth decorators
     // -----------------------------
     fastify.decorate('authenticate', async (req, res) => {
@@ -41,11 +46,11 @@ module.exports = async client => {
     });
 
     fastify.decorate('isMember', async (req, res) => {
-        // existing logic unchanged
+        // existing code unchanged
     });
 
     fastify.decorate('isAdmin', async (req, res) => {
-        // existing logic unchanged
+        // existing code unchanged
     });
 
     // -----------------------------
@@ -122,15 +127,10 @@ module.exports = async client => {
     fastify.all('/*', {}, (req, res) => handler(req.raw, res.raw, () => {}));
 
     // -----------------------------
-    // Healthcheck endpoint
-    // -----------------------------
-    fastify.get('/status', async () => ({ status: 'ok' }));
-
-    // -----------------------------
     // Start server
     // -----------------------------
-    const PORT = process.env.PORT || 3000;
-    const HOST = process.env.HTTP_HOST || '0.0.0.0';
+    const PORT = process.env.PORT || 3000; // Railway provides this automatically
+    const HOST = '0.0.0.0';
 
     fastify.listen({ host: HOST, port: PORT }, (err, addr) => {
         if (err) client.log.error.http(err);
