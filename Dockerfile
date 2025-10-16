@@ -1,16 +1,19 @@
 # syntax=docker/dockerfile:1
 
+# -----------------------------
+# Build Stage
+# -----------------------------
 FROM node:22-alpine3.20 AS builder
 
-# Install required dependencies for node-gyp
+# Install dependencies for node-gyp
 RUN apk add --no-cache make gcc g++ python3
 
-# Install pnpm globally
+# Install pnpm
 RUN npm install -g pnpm
 
 WORKDIR /build
 
-# Copy scripts first and make start.sh executable
+# Copy scripts and make start.sh executable
 COPY --link scripts scripts
 RUN chmod +x ./scripts/start.sh
 
@@ -18,7 +21,7 @@ RUN chmod +x ./scripts/start.sh
 COPY package.json pnpm-lock.yaml ./
 RUN CI=true pnpm install --prod --frozen-lockfile
 
-# Copy the rest of the source code
+# Copy the rest of the app
 COPY --link . .
 
 # -----------------------------
@@ -26,43 +29,36 @@ COPY --link . .
 # -----------------------------
 FROM node:22-alpine3.20 AS runner
 
-LABEL org.opencontainers.image.source="https://github.com/discord-tickets/bot" \
+LABEL org.opencontainers.image.source=https://github.com/discord-tickets/bot \
       org.opencontainers.image.description="The most popular open-source ticket bot for Discord." \
       org.opencontainers.image.licenses="GPL-3.0-or-later"
 
-# Install curl for healthchecks
 RUN apk --no-cache add curl
 
 # Create a non-root user
-RUN adduser --disabled-password --home /home/container container
-
-# Create working directories
-RUN mkdir /app \
-    && chown container:container /app \
-    && chmod -R 777 /app \
-    && mkdir -p /home/container/user /home/container/logs \
-    && chown -R container:container /home/container
+RUN adduser --disabled-password --home /home/container container \
+    && mkdir -p /app /home/container/user /home/container/logs \
+    && chown -R container:container /app /home/container \
+    && chmod -R 777 /app /home/container
 
 USER container
 
-# Set environment variables
 ENV USER=container \
     HOME=/home/container \
     NODE_ENV=production \
     HTTP_HOST=0.0.0.0 \
+    PORT=80 \
+    HTTP_PORT=80 \
     DOCKER=true
 
 WORKDIR /home/container
 
-# Copy built app from builder
+# Copy app from builder
 COPY --from=builder --chown=container:container --chmod=777 /build /app
 
-# Expose the port Railway expects
-EXPOSE 3000
-
-# Entrypoint
+# Entry point
 ENTRYPOINT ["/app/scripts/start.sh"]
 
-# Healthcheck for Railway
+# Healthcheck using the /status endpoint
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s \
-    CMD curl -f http://localhost:3000/status || exit 1
+    CMD curl -f http://localhost:80/status || exit 1
