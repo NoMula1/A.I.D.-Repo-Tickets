@@ -54,7 +54,6 @@ module.exports = async client => {
 					error: 'Not Found',
 					message: 'The requested resource could not be found.',
 					statusCode: 404,
-
 				});
 			}
 			const guildMember = await guild.members.fetch(userId);
@@ -63,7 +62,6 @@ module.exports = async client => {
 					error: 'Forbidden',
 					message: 'You are not permitted for this action.',
 					statusCode: 403,
-
 				});
 			}
 		} catch (err) {
@@ -81,7 +79,6 @@ module.exports = async client => {
 					error: 'Not Found',
 					message: 'The requested resource could not be found.',
 					statusCode: 404,
-
 				});
 			}
 			if (client.banned_guilds.has(guildId)) {
@@ -106,7 +103,6 @@ module.exports = async client => {
 					error: 'Forbidden',
 					message: 'You are not permitted for this action.',
 					statusCode: 403,
-
 				});
 			}
 		} catch (err) {
@@ -168,11 +164,11 @@ module.exports = async client => {
 		sync: true,
 	}).forEach(file => {
 		const path = file
-			.substring(0, file.length - 3) // remove `.js`
-			.substring(dir.length) // remove higher directories
-			.replace(/\\/g, '/') // replace `\` with `/` because Windows is stupid
-			.replace(/\[(\w+)\]/gi, ':$1') // convert [] to :
-			.replace('/index', '') || '/'; // remove index
+			.substring(0, file.length - 3)
+			.substring(dir.length)
+			.replace(/\\/g, '/')
+			.replace(/\[(\w+)\]/gi, ':$1')
+			.replace('/index', '') || '/';
 		const route = require(file);
 
 		Object.keys(route).forEach(method => fastify.route({
@@ -180,20 +176,18 @@ module.exports = async client => {
 			method: method.toUpperCase(),
 			path,
 			...route[method](fastify),
-		})); // register route
+		}));
 	});
 
 	const { handler } = await import('@discord-tickets/settings/build/handler.js');
 
-	// https://stackoverflow.com/questions/72317071/how-to-set-up-fastify-correctly-so-that-sveltekit-works-fine
-	fastify.all('/*', {}, (req, res) => handler(req.raw, res.raw, () => {
-	}));
+	fastify.all('/*', {}, (req, res) => handler(req.raw, res.raw, () => {}));
 
-	// start the fastify server
-	fastify.listen({
-		host: process.env.HTTP_HOST,
-		port: process.env.HTTP_PORT,
-	}, (err, addr) => {
+	// ✅ FIXED: Railway-compatible listen section
+	const PORT = process.env.PORT || process.env.HTTP_PORT || 3000;
+	const HOST = process.env.HTTP_HOST || '0.0.0.0';
+
+	fastify.listen({ host: HOST, port: PORT }, (err, addr) => {
 		if (err) {
 			client.log.error.http(err);
 		} else {
@@ -201,10 +195,7 @@ module.exports = async client => {
 		}
 	});
 
-	process.on('sveltekit:error', ({
-		error,
-		errorId,
-	}) => {
+	process.on('sveltekit:error', ({ error, errorId }) => {
 		client.log.error.http(`SvelteKit ${errorId} ${error}`);
 	});
 };
