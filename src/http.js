@@ -183,7 +183,7 @@ module.exports = async client => {
 
 	fastify.all('/*', {}, (req, res) => handler(req.raw, res.raw, () => {}));
 
-	// ✅ FIXED: Railway-compatible listen section
+	// ✅ FIXED: Railway-compatible listen sections
 	const PORT = process.env.PORT || process.env.HTTP_PORT || 3000;
 	const HOST = process.env.HTTP_HOST || '0.0.0.0';
 
