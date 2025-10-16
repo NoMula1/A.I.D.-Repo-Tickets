@@ -1,10 +1,8 @@
 # syntax=docker/dockerfile:1
+
 FROM node:22-alpine3.20 AS builder
 
-# Install build deps
 RUN apk add --no-cache make gcc g++ python3
-
-# Install pnpm globally
 RUN npm install -g pnpm
 
 WORKDIR /build
@@ -19,18 +17,14 @@ COPY --link . .
 
 FROM node:22-alpine3.20 AS runner
 LABEL org.opencontainers.image.source=https://github.com/discord-tickets/bot \
-      org.opencontainers.image.description="The most popular open-source ticket bot for Discord." \
-      org.opencontainers.image.licenses="GPL-3.0-or-later"
+    org.opencontainers.image.description="The most popular open-source ticket bot for Discord." \
+    org.opencontainers.image.licenses="GPL-3.0-or-later"
 
 RUN apk --no-cache add curl
 
 RUN adduser --disabled-password --home /home/container container
-RUN mkdir /app \
-    && chown container:container /app \
-    && chmod -R 777 /app
-
-RUN mkdir -p /home/container/user /home/container/logs \
-    && chown -R container:container /home/container
+RUN mkdir /app && chown container:container /app && chmod -R 777 /app
+RUN mkdir -p /home/container/user /home/container/logs && chown -R container:container /home/container
 
 USER container
 ENV USER=container \
@@ -40,10 +34,12 @@ ENV USER=container \
     DOCKER=true
 
 WORKDIR /home/container
+
 COPY --from=builder --chown=container:container --chmod=777 /build /app
+
+EXPOSE 3000
 
 ENTRYPOINT [ "/app/scripts/start.sh" ]
 
-# Railway healthcheck
-HEALTHCHECK --interval=15s --timeout=5s --start-period=90s \
-    CMD curl -f http://localhost:${PORT}/status || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s \
+    CMD curl -f http://localhost:3000/status || exit 1
