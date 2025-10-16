@@ -48,7 +48,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 🟡 Extract metadata for tags and labels
+      # 🟡 Extract metadata for tags and labelss
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
