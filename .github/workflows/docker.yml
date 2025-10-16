@@ -2,10 +2,6 @@ name: Publish Docker image
 
 on:
   push:
-    # branches:
-    #   - 'main'
-    # tags:
-    #   - 'v*'
   pull_request:
     branches:
       - 'main'
@@ -47,7 +43,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            eartharoid/discord-tickets
+            nomula/aid-repo-tickets
             ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=branch
