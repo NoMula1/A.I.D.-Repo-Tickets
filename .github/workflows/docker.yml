@@ -26,6 +26,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Debug secrets visibility
+        run: |
+          echo "DOCKER_USERNAME is set? ${{ secrets.DOCKER_USERNAME != '' }}"
+          echo "DOCKER_TOKEN is set? ${{ secrets.DOCKER_TOKEN != '' }}"
+
+
+
       # 🟢 Log in to Docker Hub
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request'
