@@ -53,7 +53,7 @@ ENV USER=container \
 
 WORKDIR /home/container
 
-# Copy app from builder
+# Copy app from builder.
 COPY --from=builder --chown=container:container --chmod=777 /build /app
 
 # Entry point
