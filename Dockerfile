@@ -9,7 +9,7 @@ FROM node:22-alpine3.20 AS builder
 RUN apk add --no-cache make gcc g++ python3
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 
 WORKDIR /build
 
